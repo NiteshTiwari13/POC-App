@@ -1,0 +1,84 @@
+// pages/plans.js
+
+import { useState } from 'react';
+import { connectToDatabase } from '../util/mongodb';
+import Subscription from '../util/subscriptionModel';
+import { loadStripe } from '@stripe/stripe-js';
+import { Elements } from '@stripe/react-stripe-js';
+import StripeForm from '../components/StripeForm';
+
+const Plans = ({ plans }) => {
+  const [selectedPlan, setSelectedPlan] = useState(null);
+  const [billingInterval, setBillingInterval] = useState('monthly');
+  const [subscriptionDetails, setSubscriptionDetails] = useState(null);
+
+  const handleSelectPlan = (plan) => {
+    setSelectedPlan(plan);
+  };
+
+  const handleSelectBillingInterval = (interval) => {
+    setBillingInterval(interval);
+  };
+
+  const handlePayment = async (token) => {
+    try {
+      const response = await fetch('/api/subscribe', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: 'USER_ID', // Replace with the actual user ID from your authentication system
+          planId: selectedPlan._id,
+          billingInterval,
+          token,
+        }),
+      });
+
+      if (response.ok) {
+        console.log('Subscription created successfully');
+
+        // Fetch the updated subscription details and update the state
+        const updatedSubscriptionDetails = await fetchSubscriptionDetails('USER_ID');
+        setSubscriptionDetails(updatedSubscriptionDetails);
+      } else {
+        const data = await response.json();
+        console.error('Subscription creation failed:', data.error);
+      }
+    } catch (error) {
+      console.error('Error during subscription creation:', error);
+    }
+  };
+
+  const fetchSubscriptionDetails = async (userId) => {
+    try {
+      await connectToDatabase();
+
+      // Implement logic to fetch subscription details from your database
+      const userSubscription = await Subscription.findOne({ userId });
+
+      return JSON.parse(JSON.stringify(userSubscription));
+    } catch (error) {
+      console.error('Error fetching subscription details:', error);
+      return null;
+    }
+  };
+
+  return (
+    <div>
+      {/* ... (previous code) */}
+
+      {subscriptionDetails && (
+        <div>
+          <h2>Your Subscription Details</h2>
+          <p>Plan: {subscriptionDetails.plan.name}</p>
+          <p>Description: {subscriptionDetails.plan.description}</p>
+          <p>Price: ${subscriptionDetails.plan.price.toFixed(2)} / {subscriptionDetails.billingInterval}</p>
+          {/* Add more details as needed */}
+        </div>
+      )}
+    </div>
+  );
+};
+
+// ... (rest of the code)

@@ -1,0 +1,102 @@
+// components/StripeForm.js
+
+import { useState } from 'react';
+import { CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
+
+const StripeForm = ({ handlePayment }) => {
+  const stripe = useStripe();
+  const elements = useElements();
+  const [error, setError] = useState(null);
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+
+    if (!stripe || !elements) {
+      return;
+    }
+
+    const cardElement = elements.getElement(CardElement);
+
+    const { token, error } = await stripe.createToken(cardElement);
+
+    if (error) {
+      setError(error.message);
+    } else {
+      handlePayment(token.id);
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <CardElement />
+      {error && <div style={{ color: 'red' }}>{error}</div>}
+      <button type="submit" disabled={!stripe}>
+        Pay
+      </button>
+    </form>
+  );
+};
+
+export default StripeForm;
+// pages/plans.js
+
+import { useState } from 'react';
+import { connectToDatabase } from '../util/mongodb';
+import Subscription from '../util/subscriptionModel';
+import { loadStripe } from '@stripe/stripe-js';
+import { Elements } from '@stripe/react-stripe-js';
+import StripeForm from '../components/StripeForm';
+
+const Plans = ({ plans }) => {
+  const [selectedPlan, setSelectedPlan] = useState(null);
+  const [billingInterval, setBillingInterval] = useState('monthly');
+
+  const handleSelectPlan = (plan) => {
+    setSelectedPlan(plan);
+  };
+
+  const handleSelectBillingInterval = (interval) => {
+    setBillingInterval(interval);
+  };
+
+  const handlePayment = async (token) => {
+    // Implement the logic to send the token to your server and create a subscription on Stripe
+    console.log('Token:', token);
+  };
+
+  return (
+    <div>
+      {/* ... (previous code) */}
+
+      {selectedPlan && (
+        <div>
+          {/* ... (previous code) */}
+
+          <div>
+            <label>
+              Billing Interval:
+              <select
+                value={billingInterval}
+                onChange={(e) => handleSelectBillingInterval(e.target.value)}
+              >
+                <option value="monthly">Monthly</option>
+                <option value="yearly">Yearly</option>
+              </select>
+            </label>
+          </div>
+
+          <Elements stripe={loadStripe('YOUR_STRIPE_PUBLISHABLE_KEY')}>
+            <StripeForm handlePayment={handlePayment} />
+          </Elements>
+        </div>
+      )}
+    </div>
+  );
+};
+
+// ... (rest of the code)
+
+
+
+
+

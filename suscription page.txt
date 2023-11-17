@@ -1,0 +1,197 @@
+// util/subscriptionModel.js
+
+import mongoose from 'mongoose';
+
+const subscriptionSchema = new mongoose.Schema({
+  name: { type: String, required: true },
+  description: { type: String },
+  price: { type: Number, required: true },
+  interval: { type: String, enum: ['monthly', 'yearly'], required: true },
+});
+
+export default mongoose.models.Subscription || mongoose.model('Subscription', subscriptionSchema);
+
+// scripts/seedPlans.js
+
+import connectToDatabase from '../util/mongodb';
+import Subscription from '../util/subscriptionModel';
+
+const seedPlans = async () => {
+  try {
+    await connectToDatabase();
+
+    const plans = [
+      {
+        name: 'Basic Plan',
+        description: 'Access to basic features',
+        price: 9.99,
+        interval: 'monthly',
+      },
+      {
+        name: 'Premium Plan',
+        description: 'Access to premium features',
+        price: 19.99,
+        interval: 'monthly',
+      },
+      {
+        name: 'Annual Plan',
+        description: 'Save with an annual subscription',
+        price: 199.99,
+        interval: 'yearly',
+      },
+    ];
+
+    await Subscription.insertMany(plans);
+
+    console.log('Subscription plans seeded successfully');
+  } catch (error) {
+    console.error('Error seeding subscription plans:', error);
+  } finally {
+    process.exit();
+  }
+};
+
+seedPlans();
+// pages/plans.js
+
+import { connectToDatabase } from '../util/mongodb';
+import Subscription from '../util/subscriptionModel';
+
+const Plans = ({ plans }) => {
+  return (
+    <div>
+      <h1>Available Subscription Plans</h1>
+      <ul>
+        {plans.map((plan) => (
+          <li key={plan._id}>
+            <h2>{plan.name}</h2>
+            <p>{plan.description}</p>
+            <p>Price: ${plan.price.toFixed(2)} / {plan.interval}</p>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+};
+
+export const getStaticProps = async () => {
+  try {
+    await connectToDatabase();
+
+    const plans = await Subscription.find();
+
+    return {
+      props: { plans: JSON.parse(JSON.stringify(plans)) },
+    };
+  } catch (error) {
+    console.error('Error fetching subscription plans:', error);
+    return {
+      props: { plans: [] },
+    };
+  }
+};
+
+export default Plans;
+// pages/plans.js
+
+import { connectToDatabase } from '../util/mongodb';
+import Subscription from '../util/subscriptionModel';
+
+const Plans = ({ plans }) => {
+  return (
+    <div>
+      <h1>Available Subscription Plans</h1>
+      <ul>
+        {plans.map((plan) => (
+          <li key={plan._id}>
+            <h2>{plan.name}</h2>
+            <p>{plan.description}</p>
+            <p>Price: ${plan.price.toFixed(2)} / {plan.interval}</p>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+};
+
+export const getStaticProps = async () => {
+  try {
+    await connectToDatabase();
+
+    const plans = await Subscription.find();
+
+    return {
+      props: { plans: JSON.parse(JSON.stringify(plans)) },
+    };
+  } catch (error) {
+    console.error('Error fetching subscription plans:', error);
+    return {
+      props: { plans: [] },
+    };
+  }
+};
+
+export default Plans;
+// pages/plans.js
+
+import { connectToDatabase } from '../util/mongodb';
+import Subscription from '../util/subscriptionModel';
+
+const Plans = ({ plans }) => {
+  return (
+    <div>
+      <h1>Available Subscription Plans</h1>
+      <ul>
+        {plans.map((plan) => (
+          <li key={plan._id}>
+            <h2>{plan.name}</h2>
+            <p>{plan.description}</p>
+            <p>Price: ${plan.price.toFixed(2)} / {plan.interval}</p>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+};
+
+export const getStaticProps = async () => {
+  try {
+    await connectToDatabase();
+
+    const plans = await Subscription.find();
+
+    return {
+      props: { plans: JSON.parse(JSON.stringify(plans)) },
+    };
+  } catch (error) {
+    console.error('Error fetching subscription plans:', error);
+    return {
+      props: { plans: [] },
+    };
+  }
+};
+
+export default Plans;
+// pages/plans.js
+
+import { connectToDatabase } from '../util/mongodb';
+import Subscription from '../util/subscriptionModel';
+
+const Plans = ({ plans }) => {
+  return (
+    <div>
+      <h1>Available Subscription Plans</h1>
+      <ul>
+        {plans.map((plan) => (
+          <li key={plan._id}>
+            <h2>{plan.name}</h2>
+            <p>{plan.description}</p>
+            <p>Price: ${plan.price.toFixed(2)} / {plan.interval}</p>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+};
+
+

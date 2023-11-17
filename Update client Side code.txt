@@ -1,0 +1,79 @@
+// pages/plans.js
+
+import { useState } from 'react';
+import { connectToDatabase } from '../util/mongodb';
+import Subscription from '../util/subscriptionModel';
+import { loadStripe } from '@stripe/stripe-js';
+import { Elements } from '@stripe/react-stripe-js';
+import StripeForm from '../components/StripeForm';
+
+const Plans = ({ plans }) => {
+  const [selectedPlan, setSelectedPlan] = useState(null);
+  const [billingInterval, setBillingInterval] = useState('monthly');
+
+  const handleSelectPlan = (plan) => {
+    setSelectedPlan(plan);
+  };
+
+  const handleSelectBillingInterval = (interval) => {
+    setBillingInterval(interval);
+  };
+
+  const handlePayment = async (token) => {
+    try {
+      const response = await fetch('/api/subscribe', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: 'USER_ID', // Replace with the actual user ID from your authentication system
+          planId: selectedPlan._id,
+          billingInterval,
+          token,
+        }),
+      });
+
+      if (response.ok) {
+        console.log('Subscription created successfully');
+        // Implement any additional actions upon successful subscription
+      } else {
+        const data = await response.json();
+        console.error('Subscription creation failed:', data.error);
+      }
+    } catch (error) {
+      console.error('Error during subscription creation:', error);
+    }
+  };
+
+  return (
+    <div>
+      {/* ... (previous code) */}
+
+      {selectedPlan && (
+        <div>
+          {/* ... (previous code) */}
+
+          <div>
+            <label>
+              Billing Interval:
+              <select
+                value={billingInterval}
+                onChange={(e) => handleSelectBillingInterval(e.target.value)}
+              >
+                <option value="monthly">Monthly</option>
+                <option value="yearly">Yearly</option>
+              </select>
+            </label>
+          </div>
+
+          <Elements stripe={loadStripe('YOUR_STRIPE_PUBLISHABLE_KEY')}>
+            <StripeForm handlePayment={handlePayment} />
+          </Elements>
+        </div>
+      )}
+    </div>
+  );
+};
+
+// ... (rest of the code)

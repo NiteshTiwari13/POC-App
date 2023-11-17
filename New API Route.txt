@@ -1,0 +1,60 @@
+// pages/api/subscribe.js
+
+import { connectToDatabase } from '../../util/mongodb';
+import stripe from 'stripe';
+
+const stripeSecretKey = process.env.STRIPE_SECRET_KEY; // Replace with your actual secret key
+
+const stripeClient = new stripe(stripeSecretKey);
+
+export default async function handler(req, res) {
+  if (req.method === 'POST') {
+    try {
+      const { userId, planId, billingInterval, token } = req.body;
+
+      // Fetch user and plan details from your database
+      const user = await getUserFromDatabase(userId);
+      const plan = await getPlanFromDatabase(planId);
+
+      if (!user || !plan) {
+        return res.status(404).json({ error: 'User or plan not found' });
+      }
+
+      // Create a subscription on Stripe
+      const subscription = await stripeClient.subscriptions.create({
+        customer: user.stripeCustomerId,
+        items: [{ price: plan.stripePriceId }],
+        billing: billingInterval === 'monthly' ? 'automatic' : 'yearly',
+      });
+
+      // Store subscription details in your database
+      await storeSubscriptionInDatabase({
+        userId,
+        planId,
+        subscriptionId: subscription.id,
+        billingInterval,
+      });
+
+      res.status(200).json({ message: 'Subscription created successfully' });
+    } catch (error) {
+      console.error('Error creating subscription:', error);
+      res.status(500).json({ error: 'Internal Server Error' });
+    }
+  } else {
+    res.status(405).json({ error: 'Method Not Allowed' });
+  }
+}
+
+// Helper functions to fetch user, plan, and store subscription details in your database
+// Implement these functions based on your database schema
+async function getUserFromDatabase(userId) {
+  // Implement logic to fetch user from your database
+}
+
+async function getPlanFromDatabase(planId) {
+  // Implement logic to fetch plan from your database
+}
+
+async function storeSubscriptionInDatabase({ userId, planId, subscriptionId, billingInterval }) {
+  // Implement logic to store subscription details in your database
+}
